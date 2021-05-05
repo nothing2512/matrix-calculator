@@ -2,7 +2,13 @@
 
 Calculate matrix with python3 in a complete way<br>
 <br>
-### available commands:
+
+## Usage
+```shell
+python main.py
+```
+
+## available commands:
 - add         : Add New Matrix
 - addition    : Count Add 2 Matrix
 - adjoint     : Count Adjoint Matrix
