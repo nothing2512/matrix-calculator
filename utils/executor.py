@@ -1,4 +1,5 @@
 import os
+import json
 from fractions import Fraction
 
 from utils import Matrix
@@ -53,15 +54,14 @@ class Executor:
         if matrix is None:
             while True:
                 matrix = input(f'Input Matrix {name}: ')
+                self.data[name] = Matrix(name, json.loads(matrix))
                 try:
                     if name.lower() == "cancel":
                         return name.lower()
-                    self.data[name] = Matrix(name, matrix)
-                    return ""
                 except Exception as _:
                     print("Invalid Matrix format")
         else:
-            self.data[name] = Matrix(name, matrix)
+            self.data[name] = Matrix(name, json.loads(matrix))
 
     def get_matrix(self, name, accept_num=False):
         while True:

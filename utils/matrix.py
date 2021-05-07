@@ -101,8 +101,9 @@ class Matrix:
 
         return matrix
 
-    def __determinant2x2(self, show=True):
-        data = self.data
+    def __determinant2x2(self, show=True, data=None):
+        if data is None:
+            data = self.data
         name = self.name
 
         a = data[0][0] * data[1][1]
@@ -123,8 +124,9 @@ class Matrix:
             self.result
         ]
 
-    def __determinant3x3_sarrus(self, show=True):
-        data = self.data
+    def __determinant3x3_sarrus(self, show=True, data=None):
+        if data is None:
+            data = self.data
         name = self.name
 
         a1 = data[0][0] * data[1][1] * data[2][2]
@@ -154,8 +156,9 @@ class Matrix:
             self.result
         ]
 
-    def __determinant4x4_sarrus(self, show=True):
-        data = self.data
+    def __determinant4x4_sarrus(self, show=True, data=None):
+        if data is None:
+            data = self.data
         name = self.name
 
         def gi_multiple(matrix, chars):
@@ -229,8 +232,12 @@ class Matrix:
 
         f3, a3 = generate_a3(data)
 
-        self.flow = f1 + f2 + f3 + ["Determinant => ", f"|{name}| = " + str(a1) + " + " + str(a2) + " + " + str(a3)]
         self.result = a1 + a2 + a3
+        self.flow = f1 + f2 + f3 + [
+            "",
+            f"|{name}| = " + str(a1) + " + " + str(a2) + " + " + str(a3),
+            f"|{name}| = {self.result}"
+        ]
 
         if show:
             self.prints()
@@ -241,31 +248,37 @@ class Matrix:
         data = self.data
         name = self.name
 
-        flow = ["Determinant => ", f'|{name}| => ']
-        flow2 = f'|{name}| => '
+        flow = ["Determinant => ", f'|{name}| = ']
+        flow2 = f'|{name}| = '
+        flow3 = f'|{name}| = '
         result = 0
         for i in range(len(data[0])):
             mnr = self.minor(0, i, False)
             _, det = self.determinant(data=mnr, show=False)
             mnr = tuple(mnr)
             k = data[0][i]
-            if i % 2 == 0:
-                result += k * det
-                if len(data[0]) - 1 > i:
-                    flow.append(f"{k} * Matrix{mnr} +")
-                    flow2 += f'{k} ({det}) +'
-                else:
-                    flow.append(f"{k} * Matrix{mnr}")
-                    flow2 += f'{k} ({det})'
+            kdet = k * det
+            if i == 0:
+                result += kdet
+                flow.append("\t" + f"{k} * Matrix{mnr}")
+                flow2 += f'{k} ({det})'
+                flow3 += f'{kdet}'
+            elif i % 2 == 0:
+                result += kdet
+                flow.append("\t" + f"- {k} * Matrix{mnr}")
+                flow2 += f' - {k} ({det})'
+                flow3 += f' - {kdet}' if kdet > 0 else f' + {-kdet}'
             else:
-                result -= k * det
-                if len(data[0]) - 1 > i:
-                    flow.append(f"{k} * Matrix{mnr} -")
-                    flow2 += f'{k} ({det}) -'
-                else:
-                    flow.append(f"{k} * Matrix{mnr}")
-                    flow2 += f'{k} ({det})'
-        self.flow = flow + ["", flow2]
+                result -= kdet
+                flow.append("\t" + f"+ {k} * Matrix{mnr}")
+                flow2 += f' + {k} ({det})'
+                flow3 += f' + {kdet}' if kdet > 0 else f' - {-kdet}'
+        self.flow = flow + [
+            "",
+            flow2,
+            flow3,
+            f'|{name}| = {result}'
+        ]
         self.result = result
 
         if show:
@@ -277,18 +290,15 @@ class Matrix:
         if data is None:
             data = self.data
 
-        if type(data).__name__ == 'dict':
-            data_type = len(data['matrix'])
-        else:
-            data_type = len(data)
+        data_type = len(data)
 
         if method == Matrix.SARRUS:
             if data_type == 2:
-                return self.__determinant2x2(show)
+                return self.__determinant2x2(show, data)
             elif data_type == 3:
-                return self.__determinant3x3_sarrus(show)
+                return self.__determinant3x3_sarrus(show, data)
             elif data_type == 4:
-                return self.__determinant4x4_sarrus(show)
+                return self.__determinant4x4_sarrus(show, data)
             else:
                 raise Exception("Invalid Type")
         else:

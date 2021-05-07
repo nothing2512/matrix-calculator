@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='matrix-calculator',
+    name='nothing-matrix-calculator',
     version='0.0.3',
     packages=['utils'],
     url='https://github.com/nothing2512/matrix-calculator',
