@@ -1,10 +1,12 @@
 from setuptools import setup
 
 setup(
-    name='matrix_calculator',
+    name='matrix-calculator',
     version='0.0.3',
     packages=['utils'],
-    url='',
+    url='https://github.com/nothing2512/matrix-calculator',
+    download_url="https://github.com/nothing2512/matrix-calculator/archive/refs/tags/0.0.3.zip",
+    keywords=["MATRIX", "MATRICE", "CALCULATOR"],
     license='MIT',
     author='Robet Atiq Maulana Rifqi',
     author_email='blank345red@gmail.com',
