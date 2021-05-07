@@ -101,6 +101,132 @@ class Matrix:
 
         return matrix
 
+    def __determinant_gauss(self):
+        data = []
+        for x in range(len(self.data)):
+            data.append([])
+            for col in self.data[x]:
+                data[x].append(col)
+
+        multiplier = 1
+        flow = []
+
+        # Swapping
+        for x in range(len(data)):
+            if data[x][0] == 0 and data[x][1] == 0 and x != 2:
+                data[x], data[2] = data[2], data[x]
+                multiplier = -multiplier
+                if len(flow) > 0:
+                    flow.append("")
+                flow.append(f"Swap row {x + 1} with row 2, multiplier = {multiplier}")
+                for row in data:
+                    cols = []
+                    for col in row:
+                        if isinstance(col, Fraction):
+                            if col.numerator % col.denominator == 0:
+                                cols.append(str(int(col.numerator / col.denominator)))
+                            else:
+                                cols.append(f"{col.numerator}/{col.denominator}")
+                        else:
+                            cols.append(str(col))
+                    cols = "\t".join(cols)
+                    flow.append(f"[{cols}]")
+                break
+
+        for x in range(len(data)):
+            if data[x][0] == 0 and data[x][1] != 0 and x != 1:
+                data[x], data[1] = data[1], data[x]
+                multiplier = -multiplier
+                if len(flow) > 0:
+                    flow.append("")
+                flow.append(f"Swap row {x + 1} with row 2, multiplier = {multiplier}")
+                for row in data:
+                    cols = []
+                    for col in row:
+                        if isinstance(col, Fraction):
+                            if col.numerator % col.denominator == 0:
+                                cols.append(str(int(col.numerator / col.denominator)))
+                            else:
+                                cols.append(f"{col.numerator}/{col.denominator}")
+                        else:
+                            cols.append(str(col))
+                    cols = "\t".join(cols)
+                    flow.append(f"[{cols}]")
+                break
+
+        if len(flow) > 0:
+            flow.append("")
+
+        # Start Elimination
+        sub = Fraction(data[1][0], data[0][0])
+        for x in range(len(data[1])):
+            data[1][x] -= data[0][x] * sub
+
+        flow.append(f"Row 2 - (Row 1 * Row 2 Col 1 / Row 1 Col 1)")
+        for row in data:
+            cols = []
+            for col in row:
+                if isinstance(col, Fraction):
+                    if col.numerator % col.denominator == 0:
+                        cols.append(str(int(col.numerator / col.denominator)))
+                    else:
+                        cols.append(f"{col.numerator}/{col.denominator}")
+                else:
+                    cols.append(str(col))
+            cols = "\t".join(cols)
+            flow.append(f"[{cols}]")
+
+        sub = Fraction(data[2][0], data[0][0])
+        for x in range(len(data[2])):
+            data[2][x] -= data[0][x] * sub
+
+        flow.append("")
+        flow.append(f"Row 3 - (Row 1 * Row 3 Col 1 / Row 1 Col 1)")
+        for row in data:
+            cols = []
+            for col in row:
+                if isinstance(col, Fraction):
+                    if col.numerator % col.denominator == 0:
+                        cols.append(str(int(col.numerator / col.denominator)))
+                    else:
+                        cols.append(f"{col.numerator}/{col.denominator}")
+                else:
+                    cols.append(str(col))
+            cols = "\t".join(cols)
+            flow.append(f"[{cols}]")
+
+        sub = Fraction(data[2][1], data[1][1])
+        for x in range(1, len(data[2])):
+            data[2][x] -= data[1][x] * sub
+
+        flow.append("")
+        flow.append(f"Row 3 - (Row 2 * Row 3 Col 2 / Row 2 Col 2)")
+        for row in data:
+            cols = []
+            for col in row:
+                if isinstance(col, Fraction):
+                    if col.numerator % col.denominator == 0:
+                        cols.append(str(int(col.numerator / col.denominator)))
+                    else:
+                        cols.append(f"{col.numerator}/{col.denominator}")
+                else:
+                    cols.append(str(col))
+            cols = "\t".join(cols)
+            flow.append(f"[{cols}]")
+
+        result = multiplier * data[0][0] * data[1][1] * data[2][2]
+        flow.append("")
+        flow.append(f"|{self.name}| = ({multiplier}) * {data[0][0]} * {data[1][1]} * {data[2][2]}")
+        flow.append(f"|{self.name}| = {result}")
+
+        self.flow = flow
+        self.prints()
+
+        return [
+            self.flow,
+            0
+        ]
+
     def __determinant2x2(self, show=True, data=None):
         if data is None:
             data = self.data
@@ -301,11 +427,16 @@ class Matrix:
                 return self.__determinant4x4_sarrus(show, data)
             else:
                 raise Exception("Invalid Type")
-        else:
+        elif method == Matrix.EXPANSION_COFACTOR:
             if data_type == 2:
                 return self.__determinant2x2(show)
             else:
                 return self.__determinant_expansion_cofactor(show)
+        elif method == Matrix.GAUSS:
+            if data_type == 3:
+                return self.__determinant_gauss()
+            else:
+                return self.determinant()
 
     def transpose(self):
         data = self.data

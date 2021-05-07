@@ -2,3 +2,4 @@ venv
 build
 dist
 nothing_matrix_calculator.egg-info
+examples.py

@@ -168,10 +168,13 @@ class Executor:
         print("List Type:")
         print("1. Sarrus")
         print("2. Cofactor")
+        print("3. Gauss")
         types = input("Input Type:")
 
         if types.lower() in ["2", "cofactor"]:
             matrix.determinant(Matrix.EXPANSION_COFACTOR)
+        elif types.lower() in ["3", "gauss"]:
+            matrix.determinant(Matrix.GAUSS)
         else:
             matrix.determinant(Matrix.SARRUS)
 
