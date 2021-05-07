@@ -143,23 +143,30 @@ def __determinant_expansion_cofactor(data):
         name = "Matrix"
 
     flow = ["Determinant => ", f'|{name}| => ']
+    flow2 = [f'|{name}| => ']
     result = 0
     for i in range(len(data[0])):
         mnr = minor(data, 0, i)
         _, det = determinant(mnr)
+        mnr = tuple(mnr)
         k = data[0][i]
         if i % 2 == 0:
             result += k * det
             if len(data[0]) - 1 > i:
-                flow.append(str(k) + " " + str(tuple(mnr)) + " + ")
+                flow.append(f"{k} * Matrix{mnr} +")
+                flow2.append(f'{k} ({det}) +')
             else:
-                flow.append(str(k) + " " + str(tuple(mnr)))
+                flow.append(f"{k} * Matrix{mnr}")
+                flow2.append(f'{k} ({det})')
         else:
             result -= k * det
             if len(data[0]) - 1 > i:
-                flow.append(str(k) + " " + str(tuple(mnr)) + " - ")
+                flow.append(f"{k} * Matrix{mnr} -")
+                flow2.append(f'{k} ({det}) -')
             else:
-                flow.append(str(k) + " " + str(tuple(mnr)))
+                flow.append(f"{k} * Matrix{mnr}")
+                flow2.append(f'{k} ({det})')
+    flow += [""] + flow2
     return flow, result
 
 
@@ -224,9 +231,9 @@ def adjoint(data):
             for x in range(len(mnr)):
                 if i_col == 0:
                     temp_flow.append("")
-                    temp_flow[x] += f'|{mnr[x]}  '
+                    temp_flow[x] += f'|{mnr[x]}' + "\t"
                 elif i_col + 1 < len(data[i_row]):
-                    temp_flow[x] += f'{mnr[x]}  '
+                    temp_flow[x] += f'{mnr[x]}' + "\t"
                 else:
                     temp_flow[x] += f'{mnr[x]}|'
         flow += temp_flow
@@ -303,7 +310,7 @@ def inverse(data):
             else:
                 f = Fraction(adj[i][j], det)
                 result[i].append(f'{f.numerator}/{f.denominator}')
-            temp_flow += f'({adj[i][j]}/{det})   '
+            temp_flow += f'({adj[i][j]}/{det})' + "\t"
         flow.append(temp_flow)
 
     return flow, result

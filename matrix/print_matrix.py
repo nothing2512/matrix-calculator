@@ -7,7 +7,8 @@ def prints(data=None, result=None, flow=None):
             print("Matrix => ")
 
         for x in data:
-            print(x)
+            row = "\t".join([str(y) for y in x])
+            print(f"[{row}]")
         print()
 
     if flow is not None:
@@ -17,10 +18,12 @@ def prints(data=None, result=None, flow=None):
         else:
             print("\n".join(flow))
         print()
+
     if result is not None:
         if type(result).__name__ == 'int':
             print("Result = ", result)
         else:
             print("Result =>")
             for x in result:
-                print(x)
+                row = "\t".join([str(y) for y in x])
+                print(f"[{row}]")
