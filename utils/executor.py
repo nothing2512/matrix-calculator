@@ -228,7 +228,18 @@ class Executor:
             matrix = self.data[matrix]
         else:
             return
-        inverse = matrix.inverse()
+
+        print("List Type:")
+        print("1. Adjoint")
+        print("2. Gauss")
+        types = input("Input Type:")
+
+        if types.lower() in ["1", "adjoint"]:
+            _, inverse = matrix.inverse(Matrix.ADJOINT)
+        elif types.lower() in ["2", "gauss"]:
+            _, inverse = matrix.inverse(Matrix.GAUSS)
+        else:
+            _, inverse = matrix.inverse(Matrix.ADJOINT)
         self.save_result(inverse)
 
     def multiply(self, matrix1=None, matrix2=None):

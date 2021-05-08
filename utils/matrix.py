@@ -1,17 +1,16 @@
 import math
-from fractions import Fraction
 import random
+from fractions import Fraction
 
 
 class Matrix:
-
     SARRUS = 0
     EXPANSION_COFACTOR = 1
     GAUSS = 2
-    ESELON = 3
+    ADJOINT = 3
 
     def __init__(self, name, data):
-        self.data = data
+        self.__data = data
         self.name = name
         self.flow = []
         self.result = None
@@ -80,6 +79,15 @@ class Matrix:
                 self.prints()
                 return flow, result
 
+    @property
+    def data(self):
+        data = []
+        for x in range(len(self.__data)):
+            data.append([])
+            for col in self.__data[x]:
+                data[x].append(col)
+        return data
+
     @staticmethod
     def generate(name, row=3, col=3, min_val=0, max_val=None):
         if max_val is None:
@@ -102,11 +110,7 @@ class Matrix:
         return matrix
 
     def __determinant_gauss(self):
-        data = []
-        for x in range(len(self.data)):
-            data.append([])
-            for col in self.data[x]:
-                data[x].append(col)
+        data = self.data
 
         multiplier = 1
         flow = []
@@ -237,10 +241,10 @@ class Matrix:
 
         self.result = a - b
         self.flow = [
-                "Determinant => ",
-                f"|{name}| = " + str(a) + " - " + str(b),
-                f"|{name}| = " + str(self.result)
-            ]
+            "Determinant => ",
+            f"|{name}| = " + str(a) + " - " + str(b),
+            f"|{name}| = " + str(self.result)
+        ]
 
         if show:
             self.prints()
@@ -266,13 +270,13 @@ class Matrix:
         self.result = result
 
         self.flow = [
-                "Determinant => ",
-                f"|{name}| = " + str(a1) + " + " + str(a2) + " + " + str(a3) + " - ( " + str(b1) + " + " + str(
-                    b2) + " + " + str(
-                    b3) + " )",
-                f"|{name}| = " + str(a1 + a2 + a3) + " - " + str(b1 + b2 + b3),
-                f"|{name}| = " + str(result)
-            ]
+            "Determinant => ",
+            f"|{name}| = " + str(a1) + " + " + str(a2) + " + " + str(a3) + " - ( " + str(b1) + " + " + str(
+                b2) + " + " + str(
+                b3) + " )",
+            f"|{name}| = " + str(a1 + a2 + a3) + " - " + str(b1 + b2 + b3),
+            f"|{name}| = " + str(result)
+        ]
 
         if show:
             self.prints()
@@ -412,6 +416,88 @@ class Matrix:
 
         return self.flow, self.result
 
+    def __inverse_adjoint(self):
+        flow_det, det = self.determinant(show=False)
+        flow_adj, adj = self.adjoint(False)
+        flow = flow_det + [""] + flow_adj + ["Inverse =>"]
+        result = []
+
+        for i in range(len(adj)):
+            result.append([])
+            temp_flow = ""
+            for j in range(len(adj[i])):
+                if det == 0:
+                    result[i].append(0)
+                else:
+                    f = Fraction(adj[i][j], det)
+                    result[i].append(f'{f.numerator}/{f.denominator}')
+                temp_flow += f'({adj[i][j]}/{det})' + "\t"
+            flow.append(temp_flow)
+
+        self.flow = flow
+        self.result = result
+
+        self.prints()
+
+        return flow, result
+
+    def __inverse_gauss(self):
+        def get_val(fraction):
+            return f"{int(fraction.numerator / fraction.denominator)}" \
+                if fraction.numerator % fraction.denominator == 0 \
+                else f"{fraction.numerator}/{fraction.denominator}"
+
+        def create_flows(a, b):
+            f = []
+            for i in range(len(a)):
+                tf = "[" + ",\t".join(get_val(a[i][j]) for j in range(len(a))) + "\t\t|\t" \
+                     + ",\t".join(get_val(b[i][j]) for j in range(len(b))) + "]"
+                f.append(tf)
+            f.append("")
+            return f
+
+        result = []
+        flows = []
+        data = []
+
+        # copying data
+        for x in range(len(self.data)):
+            data.append([])
+            result.append([])
+            for y in range(len(self.data[x])):
+                result[x].append(Fraction(1 if x == y else 0))
+                data[x].append(Fraction(self.data[x][y]))
+
+        # Make Fractions
+        for x in range(len(data)):
+            for y in range(len(data)):
+                data[x][y] = Fraction(data[x][y])
+                result[x][y] = Fraction(result[x][y])
+
+        # Applying Gauss Jordan Elimination
+        for x in range(len(data)):
+            for y in range(len(data)):
+                if x != y:
+                    ratio = data[y][x] / data[x][x]
+                    for z in range(len(data)):
+                        data[y][z] -= ratio * data[x][z]
+                        result[y][z] -= ratio * result[x][z]
+                    flows += create_flows(data, result)
+
+        # Row operation to make principal diagonal element to 1
+        for x in range(len(data)):
+            divisor = data[x][x]
+            for y in range(len(data)):
+                data[x][y] = data[x][y] / divisor
+                result[x][y] = result[x][y] / divisor
+            flows += create_flows(data, result)
+
+        self.flow = flows
+        self.result = result
+        self.prints()
+
+        return flows, result
+
     def determinant(self, method=SARRUS, data=None, show=True):
         if data is None:
             data = self.data
@@ -438,16 +524,17 @@ class Matrix:
             else:
                 return self.determinant()
 
-    def transpose(self):
-        data = self.data
-        if type(data).__name__ == 'dict':
-            data = data['matrix']
+    def transpose(self, data=None, show=True):
+        if data is None:
+            data = self.data
         self.result = [[data[j][i] for j in range(len(data[i]))] for i in range(len(data))]
-        self.prints()
+        if show:
+            self.prints()
         return self.result
 
-    def minor(self, i_row, i_col, show=True):
-        data = self.data
+    def minor(self, i_row, i_col, data=None, show=True):
+        if data is None:
+            data = self.data
 
         result = [[] for _ in range(len(data) - 1)]
         index = 0
@@ -465,8 +552,11 @@ class Matrix:
 
         return result
 
-    def cofactor(self, i_row, i_col, show=True):
-        mnr = self.minor(i_row, i_col, False)
+    def cofactor(self, i_row, i_col, data=None, show=True):
+        if data is None:
+            data = self.data
+
+        mnr = self.minor(i_row, i_col, data, False)
         _, result = self.determinant(data=mnr, show=False)
         self.result = result * (-1 if (i_row + i_col) % 2 == 1 else 1)
         self.flow = mnr
@@ -476,15 +566,15 @@ class Matrix:
 
         return mnr, self.result
 
-    def adjoint(self):
-        data = self.data
+    def adjoint(self, show=True):
+        data = self.transpose(self.data, False)
         result = []
         flow = ["Adjoint => "]
         for i_row in range(len(data)):
             result.append([])
             temp_flow = []
             for i_col in range(len(data[i_row])):
-                mnr, cof = self.cofactor(i_row, i_col, False)
+                mnr, cof = self.cofactor(i_row, i_col, data, False)
                 result[i_row].append(cof)
                 for x in range(len(mnr)):
                     if i_col == 0:
@@ -496,38 +586,19 @@ class Matrix:
                         temp_flow[x] += f'{mnr[x]}|'
             flow += temp_flow
             flow.append("")
-
         self.flow = flow
         self.result = result
 
-        self.prints()
+        if show:
+            self.prints()
 
         return flow, result
 
-    def inverse(self):
-        flow_det, det = self.determinant(show=False)
-        flow_adj, adj = self.adjoint()
-        flow = flow_det + [""] + flow_adj + ["Inverse =>"]
-        result = []
-
-        for i in range(len(adj)):
-            result.append([])
-            temp_flow = ""
-            for j in range(len(adj[i])):
-                if det == 0:
-                    result[i].append(0)
-                else:
-                    f = Fraction(adj[i][j], det)
-                    result[i].append(f'{f.numerator}/{f.denominator}')
-                temp_flow += f'({adj[i][j]}/{det})' + "\t"
-            flow.append(temp_flow)
-
-        self.flow = flow
-        self.result = result
-
-        self.prints()
-
-        return flow, result
+    def inverse(self, method=ADJOINT):
+        if method == Matrix.ADJOINT:
+            return self.__inverse_adjoint()
+        else:
+            return self.__inverse_gauss()
 
     def prints(self, result=None, data=None, data_only=False):
         if data_only:
@@ -545,8 +616,10 @@ class Matrix:
 
             for x in data:
                 row = "\t".join(
-                    [str(y) if type(y).__name__ == 'int' else f"{Fraction(y).numerator}/{Fraction(y).denominator}" for
-                     y in x])
+                    [str(y) if type(y).__name__ == 'int' else f"{Fraction(y).numerator}/{Fraction(y).denominator}"
+                    if Fraction(y).numerator % Fraction(y).denominator != 0
+                    else f"{int(Fraction(y).numerator / Fraction(y).denominator)}"
+                     for y in x])
                 print(f"[{row}]")
             print()
 
@@ -566,6 +639,7 @@ class Matrix:
                 for x in result:
                     row = "\t".join(
                         [str(y) if type(y).__name__ == 'int' else f"{Fraction(y).numerator}/{Fraction(y).denominator}"
-                         for
-                         y in x])
+                        if Fraction(y).numerator % Fraction(y).denominator != 0
+                        else f"{int(Fraction(y).numerator / Fraction(y).denominator)}"
+                         for y in x])
                     print(f"[{row}]")
