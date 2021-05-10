@@ -383,7 +383,7 @@ class Matrix:
         flow3 = f'|{name}| = '
         result = 0
         for i in range(len(data[0])):
-            mnr = self.minor(0, i, False)
+            mnr = self.minor(0, i, data, False)
             _, det = self.determinant(data=mnr, show=False)
             mnr = tuple(mnr)
             k = data[0][i]
